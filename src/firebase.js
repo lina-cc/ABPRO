@@ -4,13 +4,13 @@ import { getFirestore } from "firebase/firestore";
 
 // TODO: Reemplaza con tu configuración de Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyB0vrxYCVtyDJWwJ3yMAodiTbyN8CAYIwY",
-    authDomain: "abpro-gesfinapp.firebaseapp.com",
-    projectId: "abpro-gesfinapp",
-    storageBucket: "abpro-gesfinapp.firebasestorage.app",
-    messagingSenderId: "352927287718",
-    appId: "1:352927287718:web:63e912f9a91afdf870a767",
-    measurementId: "G-XG3ZNYDPEM"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
