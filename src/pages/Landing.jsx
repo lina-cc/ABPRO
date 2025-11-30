@@ -1,21 +1,28 @@
 import { Link } from 'react-router-dom';
+import Lottie from 'lottie-react';
+import animationData from '../assets/women-planning-about-investment.json';
 
 const Landing = () => {
     return (
         <section id="view-landing" className="view active">
-            <div className="hero-section animate-fade-in">
-                <h1 className="animate-slide-up">Domina tus <span className="text-gradient">Finanzas Personales</span></h1>
-                <p className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                    GesFinApp te ayuda a controlar tus gastos, ahorrar para tus metas y aprender sobre educación
-                    financiera de manera simple, visual y elegante.
-                </p>
-                <div className="hero-buttons animate-slide-up" style={{ animationDelay: '0.4s' }}>
-                    <Link to="/register">
-                        <button className="btn-primary">Comenzar Ahora</button>
-                    </Link>
-                    <Link to="/login">
-                        <button className="btn-secondary">Ya tengo cuenta</button>
-                    </Link>
+            <div className="hero-section hero-split animate-fade-in">
+                <div className="hero-image animate-float">
+                    <Lottie animationData={animationData} loop={true} />
+                </div>
+                <div className="hero-content">
+                    <h1 className="animate-slide-up">Domina tus <span className="text-gradient">Finanzas Personales</span></h1>
+                    <p className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                        GesFinApp te ayuda a controlar tus gastos, ahorrar para tus metas y aprender sobre educación
+                        financiera de manera simple, visual y elegante.
+                    </p>
+                    <div className="hero-buttons animate-slide-up" style={{ animationDelay: '0.4s' }}>
+                        <Link to="/register">
+                            <button className="btn-primary">Comenzar Ahora</button>
+                        </Link>
+                        <Link to="/login">
+                            <button className="btn-secondary">Ya tengo cuenta</button>
+                        </Link>
+                    </div>
                 </div>
             </div>
 
