@@ -6,12 +6,19 @@ const Register = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { register } = useAuth();
+    const { register, loginWithGoogle } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const success = await register(name, email, password);
+        if (success) {
+            navigate('/dashboard');
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        const success = await loginWithGoogle();
         if (success) {
             navigate('/dashboard');
         }
@@ -63,6 +70,12 @@ const Register = () => {
                                 <button type="button" className="btn-secondary" id="go-to-login">Ya tengo cuenta</button>
                             </Link>
                         </div>
+                        <div className="auth-separator">
+                            <span>O regístrate con</span>
+                        </div>
+                        <button type="button" className="btn-google" onClick={handleGoogleLogin}>
+                            <i className="fa-brands fa-google"></i> Google
+                        </button>
                     </form>
                 </div>
             </div>

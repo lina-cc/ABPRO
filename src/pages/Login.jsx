@@ -5,12 +5,19 @@ import { useAuth } from '../context/AuthContext';
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { login } = useAuth();
+    const { login, loginWithGoogle } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const success = await login(email, password);
+        if (success) {
+            navigate('/dashboard');
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        const success = await loginWithGoogle();
         if (success) {
             navigate('/dashboard');
         }
@@ -51,6 +58,12 @@ const Login = () => {
                                 <button type="button" className="btn-secondary" id="go-to-register">Crear Cuenta</button>
                             </Link>
                         </div>
+                        <div className="auth-separator">
+                            <span>O continúa con</span>
+                        </div>
+                        <button type="button" className="btn-google" onClick={handleGoogleLogin}>
+                            <i className="fa-brands fa-google"></i> Google
+                        </button>
                     </form>
                 </div>
             </div>

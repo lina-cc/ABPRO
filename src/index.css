@@ -759,6 +759,56 @@ select option {
 }
 
 /* Responsive */
+.auth-separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.5rem 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.auth-separator::before,
+.auth-separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.auth-separator span {
+    padding: 0 10px;
+}
+
+.btn-google {
+    width: 100%;
+    background: white;
+    color: #333;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 50px;
+    font-family: var(--font-main);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    font-size: 1rem;
+}
+
+.btn-google:hover {
+    background: #f1f1f1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+}
+
+.btn-google i {
+    color: #db4437;
+    /* Google Red */
+    font-size: 1.2rem;
+}
+
 @media (max-width: 768px) {
     .nav-links {
         display: none;
@@ -793,5 +843,9 @@ select option {
 
     .stat-card .amount {
         font-size: 2rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
     }
 }
