@@ -1,4 +1,15 @@
 import { createContext, useState, useContext, useEffect } from 'react';
+import { db } from '../firebase';
+import {
+    collection,
+    addDoc,
+    deleteDoc,
+    doc,
+    onSnapshot,
+    query,
+    orderBy
+} from 'firebase/firestore';
+import { useAuth } from './AuthContext';
 
 const DataContext = createContext();
 
@@ -7,39 +18,84 @@ export const useData = () => useContext(DataContext);
 export const DataProvider = ({ children }) => {
     const [transactions, setTransactions] = useState([]);
     const [goals, setGoals] = useState([]);
+    const { user } = useAuth();
 
-    // Load data from localStorage on mount
+    // Load data from Firestore when user logs in
     useEffect(() => {
-        const storedTransactions = localStorage.getItem('gesfin_transactions');
-        const storedGoals = localStorage.getItem('gesfin_goals');
+        if (!user) {
+            setTransactions([]);
+            setGoals([]);
+            return;
+        }
 
-        if (storedTransactions) setTransactions(JSON.parse(storedTransactions));
-        if (storedGoals) setGoals(JSON.parse(storedGoals));
-    }, []);
+        // Real-time listener for transactions
+        const qTransactions = query(
+            collection(db, `users/${user.uid}/transactions`),
+            orderBy('date', 'desc')
+        );
 
-    // Save data whenever it changes
-    useEffect(() => {
-        localStorage.setItem('gesfin_transactions', JSON.stringify(transactions));
-    }, [transactions]);
+        const unsubscribeTransactions = onSnapshot(qTransactions, (snapshot) => {
+            const transData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setTransactions(transData);
+        });
 
-    useEffect(() => {
-        localStorage.setItem('gesfin_goals', JSON.stringify(goals));
-    }, [goals]);
+        // Real-time listener for goals
+        const qGoals = query(collection(db, `users/${user.uid}/goals`));
 
-    const addTransaction = (transaction) => {
-        setTransactions(prev => [transaction, ...prev]);
+        const unsubscribeGoals = onSnapshot(qGoals, (snapshot) => {
+            const goalsData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setGoals(goalsData);
+        });
+
+        return () => {
+            unsubscribeTransactions();
+            unsubscribeGoals();
+        };
+    }, [user]);
+
+    const addTransaction = async (transaction) => {
+        if (!user) return;
+        try {
+            // Remove ID if present, let Firestore generate it
+            const { id, ...data } = transaction;
+            await addDoc(collection(db, `users/${user.uid}/transactions`), data);
+        } catch (error) {
+            console.error("Error adding transaction: ", error);
+        }
     };
 
-    const deleteTransaction = (id) => {
-        setTransactions(prev => prev.filter(t => t.id !== id));
+    const deleteTransaction = async (id) => {
+        if (!user) return;
+        try {
+            await deleteDoc(doc(db, `users/${user.uid}/transactions`, id));
+        } catch (error) {
+            console.error("Error deleting transaction: ", error);
+        }
     };
 
-    const addGoal = (goal) => {
-        setGoals(prev => [...prev, goal]);
+    const addGoal = async (goal) => {
+        if (!user) return;
+        try {
+            const { id, ...data } = goal;
+            await addDoc(collection(db, `users/${user.uid}/goals`), data);
+        } catch (error) {
+            console.error("Error adding goal: ", error);
+        }
     };
 
-    const deleteGoal = (id) => {
-        setGoals(prev => prev.filter(g => g.id !== id));
+    const deleteGoal = async (id) => {
+        if (!user) return;
+        try {
+            await deleteDoc(doc(db, `users/${user.uid}/goals`, id));
+        } catch (error) {
+            console.error("Error deleting goal: ", error);
+        }
     };
 
     const calculateBalance = () => {

@@ -1,4 +1,12 @@
 import { createContext, useState, useContext, useEffect } from 'react';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  updateProfile
+} from 'firebase/auth';
+import { auth } from '../firebase';
 
 const AuthContext = createContext();
 
@@ -9,34 +17,57 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check local storage for existing session
-    const storedUser = localStorage.getItem('gesfin_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser({
+          uid: currentUser.uid,
+          email: currentUser.email,
+          name: currentUser.displayName || 'Usuario'
+        });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = (email, password) => {
-    // Mock login logic
-    // In a real app, this would verify credentials
-    const mockUser = { name: 'Usuario', email };
-    setUser(mockUser);
-    localStorage.setItem('gesfin_user', JSON.stringify(mockUser));
-    return true;
+  const login = async (email, password) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      return true;
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error);
+      alert("Error al iniciar sesión: " + error.message);
+      return false;
+    }
   };
 
-  const register = (name, email, password) => {
-    // Mock register logic
-    const newUser = { name, email };
-    setUser(newUser);
-    localStorage.setItem('gesfin_user', JSON.stringify(newUser));
-    return true;
+  const register = async (name, email, password) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, { displayName: name });
+      // Force update local state to include name immediately
+      setUser({
+        uid: userCredential.user.uid,
+        email: userCredential.user.email,
+        name: name
+      });
+      return true;
+    } catch (error) {
+      console.error("Error al registrarse:", error);
+      alert("Error al registrarse: " + error.message);
+      return false;
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('gesfin_user');
+  const logout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
   };
 
   return (
