@@ -1,0 +1,402 @@
+// State Management
+const state = {
+    currentUser: null,
+    users: JSON.parse(localStorage.getItem('gesfinapp_users')) || [],
+    data: JSON.parse(localStorage.getItem('gesfinapp_data')) || {}
+};
+
+// DOM Elements
+const views = {
+    landing: document.getElementById('view-landing'),
+    login: document.getElementById('view-login'),
+    register: document.getElementById('view-register'),
+    dashboard: document.getElementById('view-dashboard'),
+    transactions: document.getElementById('view-transactions'),
+    goals: document.getElementById('view-goals'),
+    education: document.getElementById('view-education')
+};
+
+const nav = document.getElementById('main-nav');
+const privateNavItems = document.querySelectorAll('.private-nav');
+const publicNavItems = document.querySelectorAll('.public-nav');
+const navLinks = document.querySelectorAll('.nav-links a');
+const userNameDisplay = document.getElementById('user-name-display');
+
+// Navigation Logic
+function switchView(viewName) {
+    // Hide all views
+    Object.values(views).forEach(el => {
+        if (el) el.classList.add('hidden');
+        if (el) el.classList.remove('active');
+    });
+
+    // Show target view
+    if (views[viewName]) {
+        views[viewName].classList.remove('hidden');
+        views[viewName].classList.add('active');
+    }
+
+    // Update Nav State based on Auth, not just view
+    updateNavState();
+
+    // Update Active Link (only for private nav)
+    navLinks.forEach(link => {
+        if (link.dataset.view === viewName) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+}
+
+function updateNavState() {
+    if (state.currentUser) {
+        // User Logged In
+        privateNavItems.forEach(el => el.classList.remove('hidden'));
+        publicNavItems.forEach(el => el.classList.add('hidden'));
+    } else {
+        // User Logged Out
+        privateNavItems.forEach(el => el.classList.add('hidden'));
+        publicNavItems.forEach(el => el.classList.remove('hidden'));
+    }
+}
+
+// Authentication Logic
+function login(email, password) {
+    const user = state.users.find(u => u.email === email && u.password === password);
+    if (user) {
+        state.currentUser = user;
+        userNameDisplay.textContent = user.name;
+        switchView('dashboard');
+        loadDashboardData();
+    } else {
+        alert('Credenciales incorrectas');
+    }
+}
+
+function register(name, email, password) {
+    if (state.users.find(u => u.email === email)) {
+        alert('El correo ya está registrado');
+        return;
+    }
+
+    const newUser = { id: Date.now(), name, email, password };
+    state.users.push(newUser);
+    localStorage.setItem('gesfinapp_users', JSON.stringify(state.users));
+
+    // Initialize empty data for user
+    state.data[newUser.id] = {
+        transactions: [],
+        goals: []
+    };
+    localStorage.setItem('gesfinapp_data', JSON.stringify(state.data));
+
+    alert('Registro exitoso. Por favor inicia sesión.');
+    switchView('login');
+}
+
+function logout() {
+    state.currentUser = null;
+    switchView('landing');
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+    // Auth Forms
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        login(document.getElementById('login-email').value, document.getElementById('login-password').value);
+    });
+
+    document.getElementById('register-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        register(
+            document.getElementById('register-name').value,
+            document.getElementById('register-email').value,
+            document.getElementById('register-password').value
+        );
+    });
+
+    // Button Navigations (Delegation)
+    document.body.addEventListener('click', (e) => {
+        const trigger = e.target.closest('[data-view]');
+        if (trigger) {
+            e.preventDefault();
+            const view = trigger.dataset.view;
+            switchView(view);
+        }
+    });
+
+    // Logo Navigation
+    document.querySelector('.nav-logo').addEventListener('click', () => {
+        if (state.currentUser) {
+            switchView('dashboard');
+        } else {
+            switchView('landing');
+        }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', logout);
+
+    // Initial State
+    switchView('landing');
+});
+
+// Data Management
+function addTransaction(type, amount, category, date, description) {
+    if (!state.currentUser) return;
+
+    const newTransaction = {
+        id: Date.now(),
+        type,
+        amount: parseFloat(amount),
+        category,
+        date,
+        description
+    };
+
+    state.data[state.currentUser.id].transactions.push(newTransaction);
+    saveData();
+    updateUI();
+    alert('Movimiento agregado correctamente');
+    document.getElementById('transaction-form').reset();
+    // Set date to today again
+    document.getElementById('trans-date').valueAsDate = new Date();
+}
+
+function deleteTransaction(id) {
+    if (!state.currentUser) return;
+    const transactions = state.data[state.currentUser.id].transactions;
+    state.data[state.currentUser.id].transactions = transactions.filter(t => t.id !== id);
+    saveData();
+    updateUI();
+}
+
+function saveData() {
+    localStorage.setItem('gesfinapp_data', JSON.stringify(state.data));
+}
+
+function updateUI() {
+    loadDashboardData();
+    renderTransactionList();
+}
+
+// Dashboard Logic
+let expenseChart = null;
+let balanceChart = null;
+
+function loadDashboardData() {
+    if (!state.currentUser) return;
+
+    const userData = state.data[state.currentUser.id];
+    const transactions = userData.transactions;
+
+    // Calculate Totals
+    let totalIncome = 0;
+    let totalExpense = 0;
+    const expensesByCategory = {};
+
+    transactions.forEach(t => {
+        if (t.type === 'income') {
+            totalIncome += t.amount;
+        } else {
+            totalExpense += t.amount;
+            // Category aggregation
+            expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + t.amount;
+        }
+    });
+
+    const balance = totalIncome - totalExpense;
+
+    // Update DOM
+    document.getElementById('welcome-message').textContent = `Hola, ${state.currentUser.name}`;
+    document.getElementById('total-balance').textContent = formatCurrency(balance);
+    document.getElementById('total-income').textContent = formatCurrency(totalIncome);
+    document.getElementById('total-expense').textContent = formatCurrency(totalExpense);
+
+    // Update Charts
+    updateCharts(totalIncome, totalExpense, expensesByCategory);
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(amount);
+}
+
+function updateCharts(income, expense, expensesByCategory) {
+    const ctxExpense = document.getElementById('expenseChart').getContext('2d');
+    const ctxBalance = document.getElementById('balanceChart').getContext('2d');
+
+    // Destroy previous instances if they exist
+    if (expenseChart) expenseChart.destroy();
+    if (balanceChart) balanceChart.destroy();
+
+    // Expense Pie Chart
+    expenseChart = new Chart(ctxExpense, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(expensesByCategory),
+            datasets: [{
+                data: Object.values(expensesByCategory),
+                backgroundColor: [
+                    '#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#94a3b8' } }
+            }
+        }
+    });
+
+    // Balance Bar Chart
+    balanceChart = new Chart(ctxBalance, {
+        type: 'bar',
+        data: {
+            labels: ['Ingresos', 'Gastos'],
+            datasets: [{
+                label: 'Monto',
+                data: [income, expense],
+                backgroundColor: ['#10b981', '#ef4444'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+function renderTransactionList() {
+    if (!state.currentUser) return;
+    const list = document.getElementById('transaction-list');
+    list.innerHTML = '';
+
+    const transactions = [...state.data[state.currentUser.id].transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    transactions.forEach(t => {
+        const li = document.createElement('li');
+        li.className = 'transaction-item';
+        li.innerHTML = `
+            <div class="t-info">
+                <h4>${t.category} <small>(${t.date})</small></h4>
+                <small>${t.description || ''}</small>
+            </div>
+            <div class="t-actions">
+                <span class="t-amount ${t.type}">${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}</span>
+                <button class="btn-delete" onclick="deleteTransaction(${t.id})"><i class="fa-solid fa-trash"></i></button>
+            </div>
+        `;
+        list.appendChild(li);
+    });
+}
+
+// Initialize Date Input
+document.getElementById('trans-date').valueAsDate = new Date();
+
+// Transaction Form Listener
+document.getElementById('transaction-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    addTransaction(
+        document.getElementById('trans-type').value,
+        document.getElementById('trans-amount').value,
+        document.getElementById('trans-category').value,
+        document.getElementById('trans-date').value,
+        document.getElementById('trans-desc').value
+    );
+});
+
+// Goals Logic
+function addGoal(name, target, current, deadline) {
+    if (!state.currentUser) return;
+
+    const newGoal = {
+        id: Date.now(),
+        name,
+        target: parseFloat(target),
+        current: parseFloat(current),
+        deadline
+    };
+
+    state.data[state.currentUser.id].goals.push(newGoal);
+    saveData();
+    renderGoalsList();
+    alert('Meta creada exitosamente');
+    document.getElementById('goal-form').reset();
+}
+
+function deleteGoal(id) {
+    if (!state.currentUser) return;
+    state.data[state.currentUser.id].goals = state.data[state.currentUser.id].goals.filter(g => g.id !== id);
+    saveData();
+    renderGoalsList();
+}
+
+function renderGoalsList() {
+    if (!state.currentUser) return;
+    const list = document.getElementById('goals-list');
+    list.innerHTML = '';
+
+    const goals = state.data[state.currentUser.id].goals;
+
+    goals.forEach(g => {
+        const percent = Math.min(100, (g.current / g.target) * 100);
+        const remaining = g.target - g.current;
+
+        // Simple Projection
+        const projectionMsg = remaining <= 0
+            ? '¡Meta Alcanzada! 🎉'
+            : `Faltan ${formatCurrency(remaining)} para cumplir tu meta.`;
+
+        const card = document.createElement('div');
+        card.className = 'goal-card';
+        card.innerHTML = `
+            <div class="goal-header">
+                <div>
+                    <h4>${g.name}</h4>
+                    <small>Fecha límite: ${g.deadline}</small>
+                </div>
+                <button class="btn-delete-goal" onclick="deleteGoal(${g.id})"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div class="goal-progress-container">
+                <div class="goal-progress-bar" style="width: ${percent}%"></div>
+            </div>
+            <div class="goal-stats">
+                <span>${formatCurrency(g.current)}</span>
+                <span>${Math.round(percent)}%</span>
+                <span>${formatCurrency(g.target)}</span>
+            </div>
+            <div class="goal-projection">
+                <i class="fa-solid fa-chart-line"></i> ${projectionMsg}
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+// Goal Form Listener
+document.getElementById('goal-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    addGoal(
+        document.getElementById('goal-name').value,
+        document.getElementById('goal-target').value,
+        document.getElementById('goal-current').value,
+        document.getElementById('goal-deadline').value
+    );
+});
+
+// Update UI Wrapper
+function updateUI() {
+    loadDashboardData();
+    renderTransactionList();
+    renderGoalsList();
+}

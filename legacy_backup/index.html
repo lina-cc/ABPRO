@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GesFinApp - Tu Futuro Financiero</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Navigation -->
+        <nav id="main-nav">
+            <div class="nav-logo">
+                <i class="fa-solid fa-wallet"></i> GesFinApp
+            </div>
+
+            <!-- Private Links (Dashboard) -->
+            <ul class="nav-links private-nav hidden">
+                <li><a href="#" data-view="dashboard" class="active"><i class="fa-solid fa-chart-pie"></i> Resumen</a>
+                </li>
+                <li><a href="#" data-view="transactions"><i class="fa-solid fa-list"></i> Movimientos</a></li>
+                <li><a href="#" data-view="goals"><i class="fa-solid fa-bullseye"></i> Metas</a></li>
+                <li><a href="#" data-view="education"><i class="fa-solid fa-graduation-cap"></i> Educación</a></li>
+            </ul>
+
+            <!-- Public Links (Landing) -->
+            <div class="nav-links public-nav">
+                <button class="btn-secondary small" data-view="login">Iniciar Sesión</button>
+                <button class="btn-primary small" data-view="register">Registrarse</button>
+            </div>
+
+            <div class="nav-user private-nav hidden">
+                <span id="user-name-display">Usuario</span>
+                <button id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main id="main-content">
+            <!-- Landing View -->
+            <section id="view-landing" class="view active">
+                <div class="hero-section">
+                    <h1>Domina tus Finanzas Personales</h1>
+                    <p>GesFinApp te ayuda a controlar tus gastos, ahorrar para tus metas y aprender sobre educación
+                        financiera de manera simple y visual.</p>
+                    <div class="hero-buttons">
+                        <button class="btn-primary" data-view="register">Comenzar Ahora</button>
+                        <button class="btn-secondary" data-view="login">Ya tengo cuenta</button>
+                    </div>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card glass-panel">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <h3>Visualiza tu Dinero</h3>
+                        <p>Gráficos intuitivos para entender a dónde va tu dinero cada mes.</p>
+                    </div>
+                    <div class="feature-card glass-panel">
+                        <i class="fa-solid fa-bullseye"></i>
+                        <h3>Cumple tus Metas</h3>
+                        <p>Define objetivos de ahorro y sigue tu progreso en tiempo real.</p>
+                    </div>
+                    <div class="feature-card glass-panel">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <h3>Aprende Finanzas</h3>
+                        <p>Consejos prácticos para mejorar tu salud financiera.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Login View -->
+            <section id="view-login" class="view hidden">
+                <div class="auth-container">
+                    <div class="auth-box glass-panel">
+                        <h1>Bienvenido a GesFinApp</h1>
+                        <p>Toma el control de tus finanzas hoy.</p>
+                        <form id="login-form">
+                            <div class="input-group">
+                                <i class="fa-solid fa-envelope"></i>
+                                <input type="email" id="login-email" placeholder="Correo electrónico" required>
+                            </div>
+                            <div class="input-group">
+                                <i class="fa-solid fa-lock"></i>
+                                <input type="password" id="login-password" placeholder="Contraseña" required>
+                            </div>
+                            <div class="auth-buttons">
+                                <button type="submit" class="btn-primary">Iniciar Sesión</button>
+                                <button type="button" class="btn-secondary" id="go-to-register">Crear Cuenta</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Register View -->
+            <section id="view-register" class="view hidden">
+                <div class="auth-container">
+                    <div class="auth-box glass-panel">
+                        <h1>Crear Cuenta</h1>
+                        <p>Empieza tu viaje hacia la libertad financiera.</p>
+                        <form id="register-form">
+                            <div class="input-group">
+                                <i class="fa-solid fa-user"></i>
+                                <input type="text" id="register-name" placeholder="Nombre completo" required>
+                            </div>
+                            <div class="input-group">
+                                <i class="fa-solid fa-envelope"></i>
+                                <input type="email" id="register-email" placeholder="Correo electrónico" required>
+                            </div>
+                            <div class="input-group">
+                                <i class="fa-solid fa-lock"></i>
+                                <input type="password" id="register-password" placeholder="Contraseña" required>
+                            </div>
+                            <div class="auth-buttons">
+                                <button type="submit" class="btn-primary">Registrarse</button>
+                                <button type="button" class="btn-secondary" id="go-to-login">Ya tengo cuenta</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard View -->
+            <section id="view-dashboard" class="view hidden">
+                <header class="view-header">
+                    <h2>Resumen Financiero</h2>
+                    <p id="welcome-message">Hola, Usuario</p>
+                </header>
+
+                <div class="stats-grid">
+                    <div class="stat-card glass-panel">
+                        <h3>Balance Total</h3>
+                        <p class="amount" id="total-balance">$0</p>
+                    </div>
+                    <div class="stat-card glass-panel income">
+                        <h3>Ingresos (Mes)</h3>
+                        <p class="amount" id="total-income">$0</p>
+                    </div>
+                    <div class="stat-card glass-panel expense">
+                        <h3>Gastos (Mes)</h3>
+                        <p class="amount" id="total-expense">$0</p>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container glass-panel">
+                        <h3>Gastos por Categoría</h3>
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                    <div class="chart-container glass-panel">
+                        <h3>Ingresos vs Gastos</h3>
+                        <canvas id="balanceChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Transactions View -->
+            <section id="view-transactions" class="view hidden">
+                <header class="view-header">
+                    <h2>Mis Movimientos</h2>
+                </header>
+
+                <div class="glass-panel form-container">
+                    <h3>Agregar Nuevo Movimiento</h3>
+                    <form id="transaction-form">
+                        <div class="form-row">
+                            <div class="input-group">
+                                <select id="trans-type" required>
+                                    <option value="expense">Gasto</option>
+                                    <option value="income">Ingreso</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <input type="number" id="trans-amount" placeholder="Monto ($)" required min="1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="input-group">
+                                <input type="text" id="trans-category" placeholder="Categoría (ej. Comida, Transporte)"
+                                    required list="category-suggestions">
+                                <datalist id="category-suggestions">
+                                    <option value="Comida">
+                                    <option value="Transporte">
+                                    <option value="Vivienda">
+                                    <option value="Entretenimiento">
+                                    <option value="Salud">
+                                    <option value="Salario">
+                                    <option value="Otros">
+                                </datalist>
+                            </div>
+                            <div class="input-group">
+                                <input type="date" id="trans-date" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="trans-desc" placeholder="Descripción (Opcional)">
+                        </div>
+                        <button type="submit" class="btn-primary">Agregar Movimiento</button>
+                    </form>
+                </div>
+
+                <div class="glass-panel list-container" style="margin-top: 2rem;">
+                    <h3>Historial</h3>
+                    <ul id="transaction-list" class="transaction-list">
+                        <!-- Transactions will be loaded here -->
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Goals View -->
+            <section id="view-goals" class="view hidden">
+                <header class="view-header">
+                    <h2>Metas de Ahorro</h2>
+                </header>
+
+                <div class="glass-panel form-container">
+                    <h3>Nueva Meta</h3>
+                    <form id="goal-form">
+                        <div class="form-row">
+                            <div class="input-group">
+                                <input type="text" id="goal-name" placeholder="Nombre de la meta" required>
+                            </div>
+                            <div class="input-group">
+                                <input type="number" id="goal-target" placeholder="Monto Objetivo ($)" required min="1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="input-group">
+                                <input type="number" id="goal-current" placeholder="Ahorro Inicial ($)" required
+                                    min="0">
+                            </div>
+                            <div class="input-group">
+                                <input type="date" id="goal-deadline" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary">Crear Meta</button>
+                    </form>
+                </div>
+
+                <div id="goals-list" class="goals-grid">
+                    <!-- Goals will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Education View -->
+            <section id="view-education" class="view hidden">
+                <header class="view-header">
+                    <h2>Educación Financiera</h2>
+                </header>
+
+                <div class="education-grid">
+                    <div class="glass-panel">
+                        <h3><i class="fa-solid fa-piggy-bank"></i> La Regla 50/30/20</h3>
+                        <p>Una estrategia simple para administrar tu dinero:</p>
+                        <ul>
+                            <li><strong>50% Necesidades:</strong> Gastos fijos como arriendo, comida y servicios.</li>
+                            <li><strong>30% Deseos:</strong> Entretenimiento, salidas y caprichos.</li>
+                            <li><strong>20% Ahorro:</strong> Metas futuras y fondo de emergencia.</li>
+                        </ul>
+                    </div>
+
+                    <div class="glass-panel">
+                        <h3><i class="fa-solid fa-chart-line"></i> Interés Compuesto</h3>
+                        <p>Es el interés sobre el interés. Si ahorras e inviertes, tus ganancias generan más ganancias
+                            con el tiempo. ¡Empieza joven!</p>
+                    </div>
+
+                    <div class="glass-panel">
+                        <h3><i class="fa-solid fa-shield-halved"></i> Fondo de Emergencia</h3>
+                        <p>Antes de invertir, asegúrate de tener ahorrado entre 3 a 6 meses de tus gastos básicos para
+                        <p>Toma el control de tus finanzas hoy.</p>
+                        <form id="login-form">
+                            <div class="input-group">
+                                <i class="fa-solid fa-envelope"></i>
+                                <input type="email" id="login-email" placeholder="Correo electrónico" required>
+                            </div>
+                            <div class="input-group">
+                                <i class="fa-solid fa-lock"></i>
+                                <input type="password" id="login-password" placeholder="Contraseña" required>
+                            </div>
+                            <div class="auth-buttons">
+                                <button type="submit" class="btn-primary">Iniciar Sesión</button>
+                                <button type="button" class="btn-secondary" data-view="register">Crear Cuenta</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Register View -->
+            <section id="view-register" class="view hidden">
+                <div class="auth-container">
+                    <div class="auth-box glass-panel">
+                        <h1>Crear Cuenta</h1>
+                        <p>Empieza tu viaje hacia la libertad financiera.</p>
+                        <form id="register-form">
+                            <div class="input-group">
+                                <i class="fa-solid fa-user"></i>
+                                <input type="text" id="register-name" placeholder="Nombre completo" required>
+                            </div>
+                            <div class="input-group">
+                                <i class="fa-solid fa-envelope"></i>
+                                <input type="email" id="register-email" placeholder="Correo electrónico" required>
+                            </div>
+                            <div class="input-group">
+                                <i class="fa-solid fa-lock"></i>
+                                <input type="password" id="register-password" placeholder="Contraseña" required>
+                            </div>
+                            <div class="auth-buttons">
+                                <button type="submit" class="btn-primary">Registrarse</button>
+                                <button type="button" class="btn-secondary" data-view="login">Ya tengo cuenta</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard View -->
+            <section id="view-dashboard" class="view hidden">
+                <header class="view-header">
+                    <h2>Resumen Financiero</h2>
+                    <p id="welcome-message">Hola, Usuario</p>
+                </header>
+
+                <div class="stats-grid">
+                    <div class="stat-card glass-panel">
+                        <h3>Balance Total</h3>
+                        <p class="amount" id="total-balance">$0</p>
+                    </div>
+                    <div class="stat-card glass-panel income">
+                        <h3>Ingresos (Mes)</h3>
+                        <p class="amount" id="total-income">$0</p>
+                    </div>
+                    <div class="stat-card glass-panel expense">
+                        <h3>Gastos (Mes)</h3>
+                        <p class="amount" id="total-expense">$0</p>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container glass-panel">
+                        <h3>Gastos por Categoría</h3>
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                    <div class="chart-container glass-panel">
+                        <h3>Ingresos vs Gastos</h3>
+                        <canvas id="balanceChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Transactions View -->
+            <section id="view-transactions" class="view hidden">
+                <header class="view-header">
+                    <h2>Mis Movimientos</h2>
+                </header>
+
+                <div class="glass-panel form-container">
+                    <h3>Agregar Nuevo Movimiento</h3>
+                    <form id="transaction-form">
+                        <div class="form-row">
+                            <div class="input-group">
+                                <select id="trans-type" required>
+                                    <option value="expense">Gasto</option>
+                                    <option value="income">Ingreso</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <input type="number" id="trans-amount" placeholder="Monto ($)" required min="1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="input-group">
+                                <input type="text" id="trans-category" placeholder="Categoría (ej. Comida, Transporte)"
+                                    required list="category-suggestions">
+                                <datalist id="category-suggestions">
+                                    <option value="Comida">
+                                    <option value="Transporte">
+                                    <option value="Vivienda">
+                                    <option value="Entretenimiento">
+                                    <option value="Salud">
+                                    <option value="Salario">
+                                    <option value="Otros">
+                                </datalist>
+                            </div>
+                            <div class="input-group">
+                                <input type="date" id="trans-date" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="trans-desc" placeholder="Descripción (Opcional)">
+                        </div>
+                        <button type="submit" class="btn-primary">Agregar Movimiento</button>
+                    </form>
+                </div>
+
+                <div class="glass-panel list-container" style="margin-top: 2rem;">
+                    <h3>Historial</h3>
+                    <ul id="transaction-list" class="transaction-list">
+                        <!-- Transactions will be loaded here -->
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Goals View -->
+            <section id="view-goals" class="view hidden">
+                <header class="view-header">
+                    <h2>Metas de Ahorro</h2>
+                </header>
+
+                <div class="glass-panel form-container">
+                    <h3>Nueva Meta</h3>
+                    <form id="goal-form">
+                        <div class="form-row">
+                            <div class="input-group">
+                                <input type="text" id="goal-name" placeholder="Nombre de la meta" required>
+                            </div>
+                            <div class="input-group">
+                                <input type="number" id="goal-target" placeholder="Monto Objetivo ($)" required min="1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="input-group">
+                                <input type="number" id="goal-current" placeholder="Ahorro Inicial ($)" required
+                                    min="0">
+                            </div>
+                            <div class="input-group">
+                                <input type="date" id="goal-deadline" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary">Crear Meta</button>
+                    </form>
+                </div>
+
+                <div id="goals-list" class="goals-grid">
+                    <!-- Goals will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Education View -->
+            <section id="view-education" class="view hidden">
+                <header class="view-header">
+                    <h2>Educación Financiera</h2>
+                </header>
+
+                <div class="education-grid">
+                    <div class="glass-panel">
+                        <h3><i class="fa-solid fa-piggy-bank"></i> La Regla 50/30/20</h3>
+                        <p>Una estrategia simple para administrar tu dinero:</p>
+                        <ul>
+                            <li><strong>50% Necesidades:</strong> Gastos fijos como arriendo, comida y servicios.</li>
+                            <li><strong>30% Deseos:</strong> Entretenimiento, salidas y caprichos.</li>
+                            <li><strong>20% Ahorro:</strong> Metas futuras y fondo de emergencia.</li>
+                        </ul>
+                    </div>
+
+                    <div class="glass-panel">
+                        <h3><i class="fa-solid fa-chart-line"></i> Interés Compuesto</h3>
+                        <p>Es el interés sobre el interés. Si ahorras e inviertes, tus ganancias generan más ganancias
+                            con el tiempo. ¡Empieza joven!</p>
+                    </div>
+
+                    <div class="glass-panel">
+                        <h3><i class="fa-solid fa-shield-halved"></i> Fondo de Emergencia</h3>
+                        <p>Antes de invertir, asegúrate de tener ahorrado entre 3 a 6 meses de tus gastos básicos para
+                            imprevistos.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Main App Logic (ES Modules) -->
+    <script type="module" src="js/app.js"></script>
+</body>
+
+</html>
