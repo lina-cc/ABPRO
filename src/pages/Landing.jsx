@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 const Landing = () => {
     return (
         <section id="view-landing" className="view active">
-            <div className="hero-section">
-                <h1>Domina tus Finanzas Personales</h1>
-                <p>GesFinApp te ayuda a controlar tus gastos, ahorrar para tus metas y aprender sobre educación
-                    financiera de manera simple y visual.</p>
-                <div className="hero-buttons">
+            <div className="hero-section animate-fade-in">
+                <h1 className="animate-slide-up">Domina tus <span className="text-gradient">Finanzas Personales</span></h1>
+                <p className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                    GesFinApp te ayuda a controlar tus gastos, ahorrar para tus metas y aprender sobre educación
+                    financiera de manera simple, visual y elegante.
+                </p>
+                <div className="hero-buttons animate-slide-up" style={{ animationDelay: '0.4s' }}>
                     <Link to="/register">
                         <button className="btn-primary">Comenzar Ahora</button>
                     </Link>
@@ -17,7 +19,7 @@ const Landing = () => {
                 </div>
             </div>
 
-            <div className="features-grid">
+            <div className="features-grid animate-slide-up" style={{ animationDelay: '0.6s' }}>
                 <div className="feature-card glass-panel">
                     <i className="fa-solid fa-chart-pie"></i>
                     <h3>Visualiza tu Dinero</h3>

@@ -19,9 +19,9 @@ const Register = () => {
     return (
         <section id="view-register" className="view">
             <div className="auth-container">
-                <div className="auth-box glass-panel">
+                <div className="auth-box glass-panel animate-slide-up">
                     <h1>Crear Cuenta</h1>
-                    <p>Empieza tu viaje hacia la libertad financiera.</p>
+                    <p>Empieza tu viaje hacia la <span className="text-gradient">libertad financiera</span>.</p>
                     <form id="register-form" onSubmit={handleSubmit}>
                         <div className="input-group">
                             <i className="fa-solid fa-user"></i>

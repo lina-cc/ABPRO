@@ -51,13 +51,13 @@ const Dashboard = () => {
     };
 
     return (
-        <section id="view-dashboard" className="view">
+        <section id="view-dashboard" className="view animate-fade-in">
             <header className="view-header">
                 <h2>Resumen Financiero</h2>
-                <p id="welcome-message">Hola, {user?.name}</p>
+                <p id="welcome-message">Hola, <span className="text-gradient">{user?.name}</span></p>
             </header>
 
-            <div className="stats-grid">
+            <div className="stats-grid animate-slide-up" style={{ animationDelay: '0.2s' }}>
                 <div className="stat-card glass-panel">
                     <h3>Balance Total</h3>
                     <p className="amount" id="total-balance">${balance}</p>
@@ -72,7 +72,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="charts-grid">
+            <div className="charts-grid animate-slide-up" style={{ animationDelay: '0.4s' }}>
                 <div className="chart-container glass-panel">
                     <h3>Gastos por Categoría</h3>
                     {Object.keys(expenseCategories).length > 0 ? (

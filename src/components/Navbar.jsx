@@ -18,7 +18,7 @@ const Navbar = () => {
     return (
         <nav id="main-nav">
             <div className="nav-logo" onClick={() => navigate('/')}>
-                <i className="fa-solid fa-wallet"></i> GesFinApp
+                <i className="fa-solid fa-wallet"></i> <span className="text-gradient">GesFinApp</span>
             </div>
 
             {user ? (
@@ -60,7 +60,7 @@ const Navbar = () => {
             {user && (
                 <div className="nav-user private-nav">
                     <span id="user-name-display">{user.name}</span>
-                    <button id="logout-btn" onClick={handleLogout}>
+                    <button id="logout-btn" onClick={handleLogout} title="Cerrar Sesión">
                         <i className="fa-solid fa-right-from-bracket"></i>
                     </button>
                 </div>

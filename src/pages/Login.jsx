@@ -18,8 +18,8 @@ const Login = () => {
     return (
         <section id="view-login" className="view">
             <div className="auth-container">
-                <div className="auth-box glass-panel">
-                    <h1>Bienvenido a GesFinApp</h1>
+                <div className="auth-box glass-panel animate-slide-up">
+                    <h1>Bienvenido a <span className="text-gradient">GesFinApp</span></h1>
                     <p>Toma el control de tus finanzas hoy.</p>
                     <form id="login-form" onSubmit={handleSubmit}>
                         <div className="input-group">

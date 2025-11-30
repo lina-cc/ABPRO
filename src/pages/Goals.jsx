@@ -26,12 +26,12 @@ const Goals = () => {
     };
 
     return (
-        <section id="view-goals" className="view">
+        <section id="view-goals" className="view animate-fade-in">
             <header className="view-header">
                 <h2>Metas de Ahorro</h2>
             </header>
 
-            <div className="glass-panel form-container">
+            <div className="glass-panel form-container animate-slide-up">
                 <h3>Nueva Meta</h3>
                 <form id="goal-form" onSubmit={handleSubmit}>
                     <div className="form-row">
@@ -83,7 +83,7 @@ const Goals = () => {
                 </form>
             </div>
 
-            <div id="goals-list" className="goals-grid">
+            <div id="goals-list" className="goals-grid animate-slide-up" style={{ animationDelay: '0.2s' }}>
                 {goals.map(g => {
                     const progress = Math.min((g.current / g.target) * 100, 100);
                     return (

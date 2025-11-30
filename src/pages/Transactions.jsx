@@ -28,12 +28,12 @@ const Transactions = () => {
     };
 
     return (
-        <section id="view-transactions" className="view">
+        <section id="view-transactions" className="view animate-fade-in">
             <header className="view-header">
                 <h2>Mis Movimientos</h2>
             </header>
 
-            <div className="glass-panel form-container">
+            <div className="glass-panel form-container animate-slide-up">
                 <h3>Agregar Nuevo Movimiento</h3>
                 <form id="transaction-form" onSubmit={handleSubmit}>
                     <div className="form-row">
@@ -99,7 +99,7 @@ const Transactions = () => {
                 </form>
             </div>
 
-            <div className="glass-panel list-container" style={{ marginTop: '2rem' }}>
+            <div className="glass-panel list-container animate-slide-up" style={{ marginTop: '2rem', animationDelay: '0.2s' }}>
                 <h3>Historial</h3>
                 <ul id="transaction-list" className="transaction-list">
                     {transactions.map(t => (
