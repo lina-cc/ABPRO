@@ -2,6 +2,11 @@ import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
+import {
+    getCurrentAndPreviousMonthData,
+    calculateMonthlyVariation,
+    calculateAverageMonthlySavings
+} from '../utils/mathUtils';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -12,6 +17,12 @@ const Dashboard = () => {
     const balance = calculateBalance();
     const income = calculateIncome();
     const expense = calculateExpense();
+
+    // Math Calculations
+    const { current, previous } = getCurrentAndPreviousMonthData(transactions);
+    const incomeVariation = calculateMonthlyVariation(current.income, previous.income);
+    const expenseVariation = calculateMonthlyVariation(current.expense, previous.expense);
+    const averageSavings = calculateAverageMonthlySavings(transactions);
 
     // Get current date for display
     const currentDate = new Date().toLocaleDateString('es-ES', {
@@ -57,6 +68,18 @@ const Dashboard = () => {
         ],
     };
 
+    const renderVariation = (variation) => {
+        if (variation === null) return <small className="variation-neutral">vs mes anterior</small>;
+        const isPositive = variation > 0;
+        const color = isPositive ? 'var(--success)' : 'var(--danger)';
+        const icon = isPositive ? '⬆' : '⬇';
+        return (
+            <small style={{ color, fontWeight: 'bold' }}>
+                {icon} {Math.abs(variation).toFixed(1)}% <span style={{ color: 'var(--text-muted)', fontWeight: 'normal' }}>vs mes anterior</span>
+            </small>
+        );
+    };
+
     return (
         <section id="view-dashboard" className="view animate-fade-in">
             <div className="page-container">
@@ -77,14 +100,18 @@ const Dashboard = () => {
                     <div className="stat-card glass-panel">
                         <h3>Balance Total</h3>
                         <p className="amount" id="total-balance">${balance}</p>
+                        <small style={{ color: 'var(--text-muted)' }}>Ahorro Promedio: ${averageSavings.toFixed(0)}/mes</small>
                     </div>
                     <div className="stat-card glass-panel income">
                         <h3>Ingresos (Mes)</h3>
                         <p className="amount" id="total-income">${income}</p>
+                        {renderVariation(incomeVariation)}
                     </div>
                     <div className="stat-card glass-panel expense">
                         <h3>Gastos (Mes)</h3>
                         <p className="amount" id="total-expense">${expense}</p>
+                        {/* Invertir lógica de color para gastos: subir es malo (rojo), bajar es bueno (verde) - Opcional, por ahora mantenemos consistencia matemática */}
+                        {renderVariation(expenseVariation)}
                     </div>
                 </div>
 
@@ -108,27 +135,72 @@ const Dashboard = () => {
                 </div>
 
                 {/* Goals Section */}
-                <div className="dashboard-goals">
-                    <h3><i className="fas fa-bullseye" style={{ color: 'var(--primary-color)' }}></i> Mis Metas (Top 3)</h3>
+                <div className="dashboard-goals animate-slide-up" style={{ animationDelay: '0.6s' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <h3 style={{ margin: 0 }}><i className="fas fa-bullseye" style={{ color: 'var(--primary-color)', marginRight: '10px' }}></i> Mis Metas Principales</h3>
+                        <a href="/goals" className="btn-secondary small">Ver Todas</a>
+                    </div>
+
                     {goals.length > 0 ? (
                         <div className="goals-grid" style={{ marginTop: '0' }}>
-                            {goals.slice(0, 3).map(goal => {
-                                const progress = Math.min((goal.current / goal.target) * 100, 100);
+                            {goals.slice(0, 3).map(g => {
+                                const progress = Math.min((g.current / g.target) * 100, 100);
                                 return (
-                                    <div key={goal.id} className="mini-goal-card">
-                                        <div className="mini-goal-header">
-                                            <h4>{goal.title}</h4>
-                                            <small style={{ color: 'var(--text-muted)' }}>${goal.current} / ${goal.target}</small>
+                                    <div key={g.id} className="goal-card">
+                                        <div className="goal-header">
+                                            <div>
+                                                <h4>{g.name}</h4>
+                                                <div className="goal-badge">
+                                                    {g.goalType === 'target-date' ? '📅 Fecha Fija' : '💰 Aporte Fijo'}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="mini-goal-progress">
-                                            <div className="mini-goal-bar" style={{ width: `${progress}%` }}></div>
+
+                                        <div className="goal-stats">
+                                            <div>
+                                                <div className="goal-amount">${g.current.toLocaleString('es-CL')}</div>
+                                                <div className="goal-target">de ${g.target.toLocaleString('es-CL')}</div>
+                                            </div>
+                                            <div className="goal-percentage">{Math.round(progress)}%</div>
+                                        </div>
+
+                                        <div className="goal-progress-container">
+                                            <div className="goal-progress-bar" style={{ width: `${progress}%` }}></div>
+                                        </div>
+
+                                        <div className="goal-footer">
+                                            {g.goalType === 'target-date' ? (
+                                                <>
+                                                    <div className="goal-detail-icon">
+                                                        <i className="fas fa-bullseye"></i>
+                                                    </div>
+                                                    <div className="goal-detail-text">
+                                                        <span className="goal-detail-label">Meta</span>
+                                                        <span className="goal-detail-value">{new Date(g.deadline).toLocaleDateString()}</span>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="goal-detail-icon">
+                                                        <i className="fas fa-coins"></i>
+                                                    </div>
+                                                    <div className="goal-detail-text">
+                                                        <span className="goal-detail-label">Aporte Mensual</span>
+                                                        <span className="goal-detail-value">${g.monthlyContribution?.toLocaleString('es-CL')}</span>
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
                     ) : (
-                        <p style={{ color: 'var(--text-muted)' }}>No tienes metas activas. ¡Crea una en la sección de Metas!</p>
+                        <div className="glass-panel" style={{ textAlign: 'center', padding: '3rem' }}>
+                            <i className="fas fa-rocket" style={{ fontSize: '3rem', color: 'var(--text-muted)', marginBottom: '1rem', display: 'block' }}></i>
+                            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Aún no tienes metas definidas. ¡Es hora de planificar tu futuro!</p>
+                            <a href="/goals" className="btn-primary">Crear mi primera meta</a>
+                        </div>
                     )}
                 </div>
             </div>
