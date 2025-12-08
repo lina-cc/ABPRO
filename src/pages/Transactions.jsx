@@ -11,10 +11,7 @@ const Transactions = () => {
     const [date, setDate] = useState('');
     const [desc, setDesc] = useState('');
 
-    // Filter State
-    const [filterType, setFilterType] = useState('all');
-    const [filterCategory, setFilterCategory] = useState('all');
-    const [searchTerm, setSearchTerm] = useState('');
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -34,30 +31,27 @@ const Transactions = () => {
         setDesc('');
     };
 
-    // Filter Logic
-    const filteredTransactions = useMemo(() => {
-        return transactions.filter(t => {
-            const matchesType = filterType === 'all' || t.type === filterType;
-            const matchesCategory = filterCategory === 'all' || t.category === filterCategory;
-            const matchesSearch = t.desc.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                t.category.toLowerCase().includes(searchTerm.toLowerCase());
-            return matchesType && matchesCategory && matchesSearch;
-        });
-    }, [transactions, filterType, filterCategory, searchTerm]);
 
-    // Summary Stats based on filtered data
+
+    // Summary Stats based on all data
     const stats = useMemo(() => {
-        const income = filteredTransactions
+        const income = transactions
             .filter(t => t.type === 'income')
             .reduce((acc, curr) => acc + Number(curr.amount), 0);
-        const expense = filteredTransactions
+        const expense = transactions
             .filter(t => t.type === 'expense')
             .reduce((acc, curr) => acc + Number(curr.amount), 0);
         return { income, expense, balance: income - expense };
-    }, [filteredTransactions]);
+    }, [transactions]);
 
-    // Unique Categories for Filter
-    const categories = [...new Set(transactions.map(t => t.category))];
+    // Categories Logic
+    const defaultCategories = ['Comida', 'Transporte', 'Vivienda', 'Entretenimiento', 'Salud', 'Salario', 'Educación', 'Servicios', 'Ahorro', 'Inversión', 'Otros'];
+
+    // Merge default categories with those existing in transactions for dynamic suggestions
+    const allCategories = useMemo(() => {
+        const usedCategories = transactions.map(t => t.category);
+        return [...new Set([...defaultCategories, ...usedCategories])].sort();
+    }, [transactions]);
 
     return (
         <section id="view-transactions" className="view animate-fade-in">
@@ -119,13 +113,9 @@ const Transactions = () => {
                                     onChange={(e) => setCategory(e.target.value)}
                                 />
                                 <datalist id="category-suggestions">
-                                    <option value="Comida" />
-                                    <option value="Transporte" />
-                                    <option value="Vivienda" />
-                                    <option value="Entretenimiento" />
-                                    <option value="Salud" />
-                                    <option value="Salario" />
-                                    <option value="Otros" />
+                                    {allCategories.map(cat => (
+                                        <option key={cat} value={cat} />
+                                    ))}
                                 </datalist>
                             </div>
                             <div className="input-group">
@@ -152,34 +142,7 @@ const Transactions = () => {
                 </div>
 
                 <div className="glass-panel list-container animate-slide-up" style={{ marginTop: '2rem', animationDelay: '0.2s' }}>
-                    <h3>Historial de Transacciones</h3>
-
-                    {/* Filters */}
-                    <div className="filters-bar">
-                        <div className="filter-group">
-                            <input
-                                type="text"
-                                placeholder="Buscar..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <div className="filter-group">
-                            <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-                                <option value="all">Todos los Tipos</option>
-                                <option value="income">Ingresos</option>
-                                <option value="expense">Gastos</option>
-                            </select>
-                        </div>
-                        <div className="filter-group">
-                            <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
-                                <option value="all">Todas las Categorías</option>
-                                {categories.map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
+                    <h3>Últimos 10 Movimientos</h3>
 
                     {/* Table View */}
                     <div className="transactions-table-container">
@@ -195,7 +158,7 @@ const Transactions = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredTransactions.map(t => (
+                                {transactions.slice(0, 10).map(t => (
                                     <tr key={t.id}>
                                         <td>{t.date}</td>
                                         <td>{t.category}</td>
@@ -215,7 +178,7 @@ const Transactions = () => {
                                         </td>
                                     </tr>
                                 ))}
-                                {filteredTransactions.length === 0 && (
+                                {transactions.length === 0 && (
                                     <tr>
                                         <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
                                             No se encontraron movimientos.
@@ -225,9 +188,9 @@ const Transactions = () => {
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-        </section>
+                </div >
+            </div >
+        </section >
     );
 };
 

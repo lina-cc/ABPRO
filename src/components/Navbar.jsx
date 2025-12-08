@@ -52,6 +52,11 @@ const Navbar = () => {
                         </Link>
                     </li>
                     <li>
+                        <Link to="/history" className={isActive('/history')} onClick={closeMenu}>
+                            <i className="fa-solid fa-clock-rotate-left"></i> Historial
+                        </Link>
+                    </li>
+                    <li>
                         <Link to="/goals" className={isActive('/goals')} onClick={closeMenu}>
                             <i className="fa-solid fa-bullseye"></i> Metas
                         </Link>
