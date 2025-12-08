@@ -89,27 +89,32 @@ const Goals = () => {
         <section id="view-goals" className="view animate-fade-in">
             <div className="page-container">
                 <header className="view-header">
-                    <h2>Metas de Ahorro</h2>
+                    <div>
+                        <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Metas de Ahorro</h2>
+                        <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>
+                            Define objetivos claros y haz crecer tus ahorros mes a mes.
+                        </p>
+                    </div>
                 </header>
 
-                <div className="glass-panel form-container animate-slide-up">
-                    <h3>Nueva Meta</h3>
+                <div className="animate-slide-up">
+                    <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', marginTop: '2rem' }}>Crear Nueva Meta</h3>
 
                     <div className="goal-type-selector" style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
                         gap: '2rem',
                         marginBottom: '2rem'
                     }}>
                         <button
                             type="button"
-                            className={`btn-goal-type ${goalType === 'target-date' ? 'active' : ''}`}
+                            className={`btn-goal-type glass-panel ${goalType === 'target-date' ? 'active' : ''}`}
                             onClick={() => setGoalType('target-date')}
                             style={{
-                                padding: '2rem',
-                                borderRadius: '16px',
+                                padding: '3rem 2rem',
+                                borderRadius: '24px',
                                 border: '2px solid var(--border-color)',
-                                background: goalType === 'target-date' ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--bg-secondary)',
+                                background: goalType === 'target-date' ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--bg-card)',
                                 color: 'var(--text-color)',
                                 cursor: 'pointer',
                                 transition: 'all 0.3s ease',
@@ -154,13 +159,13 @@ const Goals = () => {
 
                         <button
                             type="button"
-                            className={`btn-goal-type ${goalType === 'target-contribution' ? 'active' : ''}`}
+                            className={`btn-goal-type glass-panel ${goalType === 'target-contribution' ? 'active' : ''}`}
                             onClick={() => setGoalType('target-contribution')}
                             style={{
-                                padding: '2rem',
-                                borderRadius: '16px',
+                                padding: '3rem 2rem',
+                                borderRadius: '24px',
                                 border: '2px solid var(--border-color)',
-                                background: goalType === 'target-contribution' ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--bg-secondary)',
+                                background: goalType === 'target-contribution' ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--bg-card)',
                                 color: 'var(--text-color)',
                                 cursor: 'pointer',
                                 transition: 'all 0.3s ease',
@@ -205,119 +210,124 @@ const Goals = () => {
                     </div>
 
                     {goalType && (
-                        <form id="goal-form" onSubmit={handleSubmit} className="animate-fade-in">
-                            <div className="form-row">
-                                <div className="input-group">
-                                    <label>Nombre de la Meta</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Ej: Vacaciones, Auto Nuevo"
-                                        required
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <label>Monto Objetivo ($)</label>
-                                    <input
-                                        type="number"
-                                        placeholder="0.00"
-                                        required
-                                        min="1"
-                                        value={target}
-                                        onChange={(e) => setTarget(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="form-row">
-                                <div className="input-group">
-                                    <label>Ahorro Inicial ($)</label>
-                                    <input
-                                        type="number"
-                                        placeholder="0.00"
-                                        min="0"
-                                        value={current}
-                                        onChange={(e) => setCurrent(e.target.value)}
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <label>Tasa de Interés Anual (%)</label>
-                                    <input
-                                        type="number"
-                                        placeholder="0"
-                                        min="0"
-                                        step="0.1"
-                                        value={interestRate}
-                                        onChange={(e) => setInterestRate(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="form-row">
-                                {goalType === 'target-date' ? (
+                        <div className="glass-panel form-container animate-fade-in" style={{ marginTop: '1rem' }}>
+                            <h4 style={{ marginBottom: '1.5rem', fontSize: '1.3rem' }}>
+                                {goalType === 'target-date' ? 'Configurar Fecha Límite' : 'Configurar Aporte Mensual'}
+                            </h4>
+                            <form id="goal-form" onSubmit={handleSubmit}>
+                                <div className="form-row">
                                     <div className="input-group">
-                                        <label>Fecha Límite</label>
+                                        <label>Nombre de la Meta</label>
                                         <input
-                                            type="date"
+                                            type="text"
+                                            placeholder="Ej: Vacaciones, Auto Nuevo"
                                             required
-                                            value={deadline}
-                                            onChange={(e) => setDeadline(e.target.value)}
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
                                         />
                                     </div>
-                                ) : (
                                     <div className="input-group">
-                                        <label>Aporte Mensual ($)</label>
+                                        <label>Monto Objetivo ($)</label>
                                         <input
                                             type="number"
                                             placeholder="0.00"
                                             required
                                             min="1"
-                                            value={monthlyContribution}
-                                            onChange={(e) => setMonthlyContribution(e.target.value)}
+                                            value={target}
+                                            onChange={(e) => setTarget(e.target.value)}
                                         />
                                     </div>
-                                )}
-                            </div>
+                                </div>
 
-                            {/* Live Preview */}
-                            {previewResult && (
-                                <div className="calculation-preview" style={{
-                                    background: 'rgba(var(--primary-rgb), 0.1)',
-                                    padding: '1rem',
-                                    borderRadius: '8px',
-                                    margin: '1rem 0',
-                                    borderLeft: '4px solid var(--primary-color)'
-                                }}>
+                                <div className="form-row">
+                                    <div className="input-group">
+                                        <label>Ahorro Inicial ($)</label>
+                                        <input
+                                            type="number"
+                                            placeholder="0.00"
+                                            min="0"
+                                            value={current}
+                                            onChange={(e) => setCurrent(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="input-group">
+                                        <label>Tasa de Interés Anual (%)</label>
+                                        <input
+                                            type="number"
+                                            placeholder="0"
+                                            min="0"
+                                            step="0.1"
+                                            value={interestRate}
+                                            onChange={(e) => setInterestRate(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="form-row">
                                     {goalType === 'target-date' ? (
-                                        <>
-                                            <h4 style={{ margin: 0, color: 'var(--primary-color)' }}>Plan Recomendado</h4>
-                                            <p style={{ margin: '0.5rem 0 0' }}>
-                                                Para llegar a la meta en <strong>{previewResult.months} meses</strong>, debes ahorrar:
-                                                <strong style={{ fontSize: '1.2rem', display: 'block', marginTop: '0.25rem' }}>
-                                                    ${previewResult.value.toLocaleString('es-CL', { maximumFractionDigits: 0 })} / mes
-                                                </strong>
-                                            </p>
-                                        </>
+                                        <div className="input-group">
+                                            <label>Fecha Límite</label>
+                                            <input
+                                                type="date"
+                                                required
+                                                value={deadline}
+                                                onChange={(e) => setDeadline(e.target.value)}
+                                            />
+                                        </div>
                                     ) : (
-                                        <>
-                                            <h4 style={{ margin: 0, color: 'var(--primary-color)' }}>Proyección</h4>
-                                            <p style={{ margin: '0.5rem 0 0' }}>
-                                                Con un aporte de ${parseFloat(monthlyContribution).toLocaleString('es-CL')}, alcanzarás tu meta en:
-                                                <strong style={{ fontSize: '1.2rem', display: 'block', marginTop: '0.25rem' }}>
-                                                    {previewResult.exceeded ? 'Más de 100 años (Meta difícil)' : `${previewResult.months} meses`}
-                                                </strong>
-                                            </p>
-                                        </>
+                                        <div className="input-group">
+                                            <label>Aporte Mensual ($)</label>
+                                            <input
+                                                type="number"
+                                                placeholder="0.00"
+                                                required
+                                                min="1"
+                                                value={monthlyContribution}
+                                                onChange={(e) => setMonthlyContribution(e.target.value)}
+                                            />
+                                        </div>
                                     )}
                                 </div>
-                            )}
 
-                            <div style={{ display: 'flex', gap: '1rem' }}>
-                                <button type="button" className="btn-secondary" onClick={() => setGoalType(null)} style={{ flex: 1 }}>Cancelar</button>
-                                <button type="submit" className="btn-primary" style={{ flex: 2 }}>Crear Meta</button>
-                            </div>
-                        </form>
+                                {/* Live Preview */}
+                                {previewResult && (
+                                    <div className="calculation-preview" style={{
+                                        background: 'rgba(var(--primary-rgb), 0.1)',
+                                        padding: '1rem',
+                                        borderRadius: '8px',
+                                        margin: '1rem 0',
+                                        borderLeft: '4px solid var(--primary-color)'
+                                    }}>
+                                        {goalType === 'target-date' ? (
+                                            <>
+                                                <h4 style={{ margin: 0, color: 'var(--primary-color)' }}>Plan Recomendado</h4>
+                                                <p style={{ margin: '0.5rem 0 0' }}>
+                                                    Para llegar a la meta en <strong>{previewResult.months} meses</strong>, debes ahorrar:
+                                                    <strong style={{ fontSize: '1.2rem', display: 'block', marginTop: '0.25rem' }}>
+                                                        ${previewResult.value.toLocaleString('es-CL', { maximumFractionDigits: 0 })} / mes
+                                                    </strong>
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <h4 style={{ margin: 0, color: 'var(--primary-color)' }}>Proyección</h4>
+                                                <p style={{ margin: '0.5rem 0 0' }}>
+                                                    Con un aporte de ${parseFloat(monthlyContribution).toLocaleString('es-CL')}, alcanzarás tu meta en:
+                                                    <strong style={{ fontSize: '1.2rem', display: 'block', marginTop: '0.25rem' }}>
+                                                        {previewResult.exceeded ? 'Más de 100 años (Meta difícil)' : `${previewResult.months} meses`}
+                                                    </strong>
+                                                </p>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    <button type="button" className="btn-secondary" onClick={() => setGoalType(null)} style={{ flex: 1 }}>Cancelar</button>
+                                    <button type="submit" className="btn-primary" style={{ flex: 2 }}>Crear Meta</button>
+                                </div>
+                            </form>
+                        </div>
                     )}
                 </div>
 

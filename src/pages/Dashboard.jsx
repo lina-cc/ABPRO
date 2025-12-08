@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import { useData } from '../context/DataContext';
+import { useData, getCategoryStyle } from '../context/DataContext';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import {
@@ -44,14 +44,7 @@ const Dashboard = () => {
         datasets: [
             {
                 data: Object.values(expenseCategories),
-                backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF',
-                    '#FF9F40',
-                ],
+                backgroundColor: Object.keys(expenseCategories).map(cat => getCategoryStyle(cat).color),
                 borderWidth: 1,
             },
         ],
@@ -91,7 +84,7 @@ const Dashboard = () => {
                         </p>
                     </div>
                     <div className="date-display">
-                        <i className="fas fa-calendar-alt"></i>
+                        <i className="fas fa-calendar-alt" style={{ marginRight: '10px' }}></i>
                         {capitalizedDate}
                     </div>
                 </header>

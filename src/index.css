@@ -67,6 +67,7 @@ body {
 #main-content {
     flex: 1;
     padding-bottom: 4rem;
+    padding-top: 2rem;
     /* Space for footer */
     width: 100%;
 }

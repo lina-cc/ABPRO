@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useData } from '../context/DataContext';
+import { useState, useMemo, useRef } from 'react';
+import { useData, getCategoryStyle } from '../context/DataContext';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { calculateTotalByType, calculateMonthlyVariation } from '../utils/mathUtils';
@@ -21,7 +21,8 @@ const History = () => {
     const formatDisplayDate = (dateString) => {
         const [year, month] = dateString.split('-');
         const date = new Date(year, month - 1);
-        return date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+        const s = date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+        return s.charAt(0).toUpperCase() + s.slice(1);
     };
 
     // Filter Logic
@@ -78,7 +79,7 @@ const History = () => {
         labels: Object.keys(expenseCategories),
         datasets: [{
             data: Object.values(expenseCategories),
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+            backgroundColor: Object.keys(expenseCategories).map(cat => getCategoryStyle(cat).color),
             borderWidth: 1,
         }],
     };
@@ -104,30 +105,59 @@ const History = () => {
         );
     };
 
+    const dateInputRef = useRef(null);
+
     return (
         <section id="view-history" className="view animate-fade-in">
             <div className="page-container">
                 <header className="view-header" style={{ marginBottom: '2rem' }}>
                     <div className="header-content">
-                        <h2>Historial Financiero</h2>
-                        <p style={{ color: 'var(--text-muted)' }}>Analiza tu desempeño mensual</p>
+                        <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Historial Financiero</h2>
+                        <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>Analiza tu desempeño mensual.</p>
                     </div>
-                    <div className="date-selector-container">
+                    <div
+                        className="date-selector-container"
+                        style={{ position: 'relative', display: 'inline-block' }}
+                        onClick={() => dateInputRef.current?.showPicker()}
+                    >
+                        <div style={{
+                            padding: '0.8rem 1.2rem',
+                            borderRadius: '12px',
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--glass-border)',
+                            color: 'var(--text-main)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            cursor: 'pointer'
+                        }}>
+                            <span style={{ fontSize: '1rem', fontWeight: '500' }}>{formatDisplayDate(selectedDate)}</span>
+                            <i className="fas fa-calendar-alt" style={{ color: 'white' }}></i>
+                        </div>
                         <input
+                            ref={dateInputRef}
                             type="month"
                             className="month-selector"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
                             style={{
-                                padding: '0.8rem',
-                                borderRadius: '12px',
-                                background: 'var(--bg-card)',
-                                border: '1px solid var(--glass-border)',
-                                color: 'var(--text-main)',
-                                fontFamily: 'var(--font-main)',
-                                fontSize: '1rem',
-                                outline: 'none',
-                                cursor: 'pointer'
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
+                                opacity: 0,
+                                pointerEvents: 'none', // Ensure clicks pass through if z-index issue, but actually we want the DIV to capture click
+                                // Keep it technically "visible" for showPicker to work, but hidden from user
+                                opacity: 0,
+                                position: 'absolute',
+                                left: 0,
+                                bottom: 0,
+                                width: 0,
+                                height: 0,
+                                border: 0,
+                                padding: 0,
+                                margin: 0
                             }}
                         />
                     </div>
@@ -194,7 +224,15 @@ const History = () => {
                                 {filteredTransactions.map(t => (
                                     <tr key={t.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                                         <td style={{ padding: '1rem' }}>{t.date}</td>
-                                        <td style={{ padding: '1rem' }}>{t.category}</td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <i
+                                                    className={`fas ${getCategoryStyle(t.category).icon}`}
+                                                    style={{ color: getCategoryStyle(t.category).color, width: '20px', textAlign: 'center' }}
+                                                ></i>
+                                                {t.category}
+                                            </div>
+                                        </td>
                                         <td style={{ padding: '1rem' }}>{t.desc || '-'}</td>
                                         <td style={{ padding: '1rem', color: t.type === 'income' ? 'var(--success)' : 'var(--danger)', fontWeight: 'bold' }}>
                                             {t.type === 'income' ? '+' : '-'}${t.amount}

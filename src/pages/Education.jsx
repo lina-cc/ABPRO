@@ -44,7 +44,7 @@ const Education = () => {
                 <header className="view-header">
                     <div>
                         <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Educación Financiera</h2>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Conceptos clave para dominar tus finanzas personales.</p>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>Conceptos clave para dominar tus finanzas personales.</p>
                     </div>
                 </header>
 
