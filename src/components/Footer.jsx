@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
     return (
@@ -9,24 +10,18 @@ const Footer = () => {
                     <span>GesFinApp</span>
                 </div>
                 <div className="footer-links">
-                    <a href="#" className="footer-link">About Us</a>
-                    <a href="#" className="footer-link">Privacy Policy</a>
-                    <a href="#" className="footer-link">Terms of Service</a>
+                    <Link to="/about" className="footer-link">Sobre Nosotros</Link>
+                    <a href="#" className="footer-link">Política de Privacidad</a>
+                    <a href="#" className="footer-link">Términos de Servicio</a>
                 </div>
                 <div className="social-links">
-                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                        <i className="fab fa-twitter"></i>
-                    </a>
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                    <a href="https://www.instagram.com/gesfinapp" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                         <i className="fab fa-instagram"></i>
-                    </a>
-                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                        <i className="fab fa-linkedin-in"></i>
                     </a>
                 </div>
             </div>
             <div className="footer-bottom">
-                <p>&copy; {new Date().getFullYear()} GesFinApp. All rights reserved.</p>
+                <p>&copy; {new Date().getFullYear()} GesFinApp. Todos los derechos reservados.</p>
             </div>
         </footer>
     );
