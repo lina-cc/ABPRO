@@ -100,16 +100,15 @@ const Dashboard = () => {
                     <div className="stat-card glass-panel">
                         <h3>Balance Total</h3>
                         <p className="amount" id="total-balance">${balance}</p>
-                        <small style={{ color: 'var(--text-muted)' }}>Ahorro Promedio: ${averageSavings.toFixed(0)}/mes</small>
                     </div>
                     <div className="stat-card glass-panel income">
                         <h3>Ingresos (Mes)</h3>
-                        <p className="amount" id="total-income">${income}</p>
+                        <p className="amount" id="total-income">${current.income}</p>
                         {renderVariation(incomeVariation)}
                     </div>
                     <div className="stat-card glass-panel expense">
                         <h3>Gastos (Mes)</h3>
-                        <p className="amount" id="total-expense">${expense}</p>
+                        <p className="amount" id="total-expense">${current.expense}</p>
                         {/* Invertir lógica de color para gastos: subir es malo (rojo), bajar es bueno (verde) - Opcional, por ahora mantenemos consistencia matemática */}
                         {renderVariation(expenseVariation)}
                     </div>
