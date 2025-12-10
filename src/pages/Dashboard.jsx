@@ -178,70 +178,113 @@ const Dashboard = () => {
                         <a href="/goals" className="btn-secondary small">Ver Todas</a>
                     </div>
 
-                    {goals.length > 0 ? (
-                        <div className="goals-grid" style={{ marginTop: '0' }}>
-                            {goals.slice(0, 3).map(g => {
-                                const progress = Math.min((g.current / g.target) * 100, 100);
-                                return (
-                                    <div key={g.id} className="goal-card">
-                                        <div className="goal-header">
-                                            <div>
-                                                <h4>{g.name}</h4>
-                                                <div className="goal-badge">
-                                                    {g.goalType === 'target-date' ? '📅 Fecha Fija' : '💰 Aporte Fijo'}
+                    {(() => {
+                        const activeGoals = goals.filter(g => (g.current / g.target) < 1);
+                        const completedGoals = goals.filter(g => (g.current / g.target) >= 1);
+                        const displayGoals = activeGoals.length > 0 ? activeGoals : completedGoals;
+
+                        if (goals.length === 0) {
+                            return (
+                                <div className="glass-panel" style={{ textAlign: 'center', padding: '3rem' }}>
+                                    <i className="fas fa-rocket" style={{ fontSize: '3rem', color: 'var(--text-muted)', marginBottom: '1rem', display: 'block' }}></i>
+                                    <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Aún no tienes metas definidas. ¡Es hora de planificar tu futuro!</p>
+                                    <a href="/goals" className="btn-primary">Crear mi primera meta</a>
+                                </div>
+                            );
+                        }
+
+                        return (
+                            <div className="goals-grid" style={{ marginTop: '0' }}>
+                                {displayGoals.slice(0, 3).map(g => {
+                                    const progress = Math.min((g.current / g.target) * 100, 100);
+                                    const isCompleted = progress >= 100;
+
+                                    return (
+                                        <div key={g.id} className="goal-card" style={isCompleted ? {
+                                            border: '2px solid #fbbf24',
+                                            background: 'linear-gradient(145deg, rgba(20, 20, 30, 0.9), rgba(40, 40, 60, 0.8))',
+                                            boxShadow: '0 4px 15px rgba(251, 191, 36, 0.15)'
+                                        } : {}}>
+                                            <div className="goal-header">
+                                                <div>
+                                                    <h4 style={isCompleted ? { color: '#fbbf24' } : {}}>{g.name}</h4>
+                                                    <div className="goal-badge" style={isCompleted ? { background: '#fbbf24', color: '#000', fontWeight: 'bold' } : {}}>
+                                                        {isCompleted ? '🏆 ¡CUMPLIDA!' : (g.goalType === 'target-date' ? '📅 Fecha Fija' : '💰 Aporte Fijo')}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div className="goal-stats">
-                                            <div>
-                                                <div className="goal-amount">${g.current.toLocaleString('es-CL')}</div>
-                                                <div className="goal-target">de ${g.target.toLocaleString('es-CL')}</div>
+                                            <div className="goal-stats">
+                                                <div>
+                                                    <div className="goal-amount" style={isCompleted ? { color: '#fbbf24' } : {}}>${g.current.toLocaleString('es-CL')}</div>
+                                                    <div className="goal-target user-select-none">de ${g.target.toLocaleString('es-CL')}</div>
+                                                </div>
+                                                <div style={{ textAlign: 'right' }}>
+                                                    <div className="goal-percentage" style={isCompleted ? { color: '#fbbf24' } : {}}>{Math.round(progress)}%</div>
+                                                </div>
                                             </div>
-                                            <div className="goal-percentage">{Math.round(progress)}%</div>
-                                        </div>
 
-                                        <div className="goal-progress-container">
-                                            <div className="goal-progress-bar" style={{ width: `${progress}%` }}></div>
-                                        </div>
+                                            <div className="goal-progress-container" style={isCompleted ? { background: 'rgba(251, 191, 36, 0.2)' } : {}}>
+                                                <div className="goal-progress-bar" style={{
+                                                    width: `${progress}%`,
+                                                    background: isCompleted ? 'linear-gradient(90deg, #fbbf24, #f59e0b)' : 'var(--primary-color)'
+                                                }}></div>
+                                            </div>
 
-                                        <div className="goal-footer">
-                                            {g.goalType === 'target-date' ? (
-                                                <>
-                                                    <div className="goal-detail-icon">
-                                                        <i className="fas fa-bullseye"></i>
-                                                    </div>
-                                                    <div className="goal-detail-text">
-                                                        <span className="goal-detail-label">Meta</span>
-                                                        <span className="goal-detail-value">{new Date(g.deadline).toLocaleDateString()}</span>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <div className="goal-detail-icon">
-                                                        <i className="fas fa-coins"></i>
-                                                    </div>
-                                                    <div className="goal-detail-text">
-                                                        <span className="goal-detail-label">Aporte Mensual</span>
-                                                        <span className="goal-detail-value">${g.monthlyContribution?.toLocaleString('es-CL')}</span>
-                                                    </div>
-                                                </>
-                                            )}
+                                            <div className="goal-footer">
+                                                {isCompleted ? (
+                                                    <>
+                                                        <div className="goal-detail-icon">
+                                                            <i className="fas fa-calendar-check" style={{ color: '#000' }}></i>
+                                                        </div>
+                                                        <div className="goal-detail-text">
+                                                            <span className="goal-detail-label" style={{ color: '#000', fontWeight: 'bold' }}>
+                                                                Inicio: {g.createdAt ? new Date(g.createdAt).toLocaleDateString() : 'Fecha no registrada'}
+                                                            </span>
+                                                            <span className="goal-detail-value" style={{ color: '#333' }}>
+                                                                {g.deadline ? `Meta: ${new Date(g.deadline).toLocaleDateString()}` : '¡Meta Completada!'}
+                                                            </span>
+                                                        </div>
+                                                    </>
+                                                ) : g.goalType === 'target-date' ? (
+                                                    <>
+                                                        <div className="goal-detail-icon">
+                                                            <i className="fas fa-bullseye"></i>
+                                                        </div>
+                                                        <div className="goal-detail-text">
+                                                            <span className="goal-detail-label">Meta: {new Date(g.deadline).toLocaleDateString()}</span>
+                                                            {g.calculatedResult && (
+                                                                <span className="goal-detail-value">
+                                                                    Ahorro sugerido: ${Math.round(g.calculatedResult.value).toLocaleString('es-CL')}/mes
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="goal-detail-icon">
+                                                            <i className="fas fa-coins"></i>
+                                                        </div>
+                                                        <div className="goal-detail-text">
+                                                            <span className="goal-detail-label">Aporte: ${g.monthlyContribution?.toLocaleString('es-CL')}/mes</span>
+                                                            {g.calculatedResult && (
+                                                                <span className="goal-detail-value">
+                                                                    Estimado: {g.calculatedResult.months} meses
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <div className="glass-panel" style={{ textAlign: 'center', padding: '3rem' }}>
-                            <i className="fas fa-rocket" style={{ fontSize: '3rem', color: 'var(--text-muted)', marginBottom: '1rem', display: 'block' }}></i>
-                            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Aún no tienes metas definidas. ¡Es hora de planificar tu futuro!</p>
-                            <a href="/goals" className="btn-primary">Crear mi primera meta</a>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </section>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })()}
+                </div >
+            </div >
+        </section >
     );
 };
 
