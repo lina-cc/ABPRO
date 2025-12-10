@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import animationData from '../assets/women-planning-about-investment.json';
+import { useAuth } from '../context/AuthContext';
 
 const Landing = () => {
+    const { user } = useAuth();
     return (
         <section id="view-landing" className="view active">
             <div className="hero-section hero-split animate-fade-in">
@@ -16,12 +18,22 @@ const Landing = () => {
                         financiera de manera simple, visual y elegante.
                     </p>
                     <div className="hero-buttons animate-slide-up" style={{ animationDelay: '0.4s' }}>
-                        <Link to="/register">
-                            <button className="btn-primary">Comenzar Ahora</button>
-                        </Link>
-                        <Link to="/login">
-                            <button className="btn-secondary">Ya tengo cuenta</button>
-                        </Link>
+                        {user ? (
+                            <Link to="/dashboard">
+                                <button className="btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
+                                    Ir a mi resumen financiero <i className="fas fa-arrow-right" style={{ marginLeft: '8px' }}></i>
+                                </button>
+                            </Link>
+                        ) : (
+                            <>
+                                <Link to="/register">
+                                    <button className="btn-primary">Comenzar Ahora</button>
+                                </Link>
+                                <Link to="/login">
+                                    <button className="btn-secondary">Ya tengo cuenta</button>
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

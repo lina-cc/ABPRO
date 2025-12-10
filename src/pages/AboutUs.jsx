@@ -4,7 +4,7 @@ const AboutUs = () => {
     return (
         <div className="page-container animate-fade-in">
             <div className="hero-section text-center mb-5">
-                <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Sobre Nosotros</h2>
+                <h2 className="text-gradient" style={{ fontSize: '3rem', marginBottom: '1rem', fontWeight: 'bold' }}>Sobre Nosotros</h2>
                 <p className="lead text-muted" style={{ maxWidth: '800px', margin: '0 auto' }}>
                     En GesFinApp, creemos que el control financiero es la clave para la libertad personal.
                     Nuestra misión es empoderar a las personas con herramientas intuitivas y poderosas para gestionar su dinero.
