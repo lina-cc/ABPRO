@@ -1,9 +1,47 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { calculateAverageMonthlySavings, projectGoalCompletion } from '../utils/mathUtils';
+import confetti from 'canvas-confetti';
 
 const Goals = () => {
     const { goals, addGoal, deleteGoal, transactions } = useData();
+    const { user } = useAuth();
+
+    // Calculate Monthly Savings for Header Summary
+    const currentMonthKey = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const currentMonthSavings = transactions
+        .filter(t => t.type === 'saving' && t.date.startsWith(currentMonthKey))
+        .reduce((acc, t) => acc + Number(t.amount), 0);
+
+    const motivationalMessage = currentMonthSavings > 0
+        ? `¡Sigue así, ${user?.name?.split(' ')[0] || ''}! Vas muy bien.`
+        : `Recuerda ahorrar y crear metas para tu futuro. ¡Tú puedes, ${user?.name?.split(' ')[0] || ''}!`;
+
+    // Confetti Effect for Completed Goals
+    useEffect(() => {
+        const hasCompletedGoal = goals.some(g => (g.current / g.target) >= 1);
+        if (hasCompletedGoal) {
+            // Short delay to let the page load/animation settle
+            const timer = setTimeout(() => {
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [goals]);
+
+    // Manual Celebration Trigger
+    const triggerCelebration = () => {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    };
 
     // Form State
     const [name, setName] = useState('');
@@ -63,6 +101,7 @@ const Goals = () => {
 
         const newGoal = {
             id: Date.now(),
+            createdAt: new Date().toISOString(),
             name,
             target: parseFloat(target),
             current: parseFloat(current) || 0,
@@ -88,12 +127,32 @@ const Goals = () => {
     return (
         <section id="view-goals" className="view animate-fade-in">
             <div className="page-container">
-                <header className="view-header">
+                <header className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                     <div>
                         <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Metas de Ahorro</h2>
                         <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>
                             Define objetivos claros y haz crecer tus ahorros mes a mes.
                         </p>
+                    </div>
+
+                    {/* Monthly Savings Summary Card */}
+                    <div className="glass-panel animate-slide-up" style={{
+                        padding: '2rem',
+                        borderLeft: '6px solid var(--primary-color)',
+                        minWidth: '350px',
+                        background: 'rgba(var(--primary-rgb), 0.05)',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                            <i className="fas fa-piggy-bank" style={{ color: 'var(--primary-color)', fontSize: '1.2rem' }}></i>
+                            <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Ahorrado este mes</h4>
+                        </div>
+                        <p style={{ fontSize: '2.5rem', fontWeight: '800', margin: '0 0 10px 0', color: 'var(--text-main)', lineHeight: '1.1' }}>
+                            ${currentMonthSavings.toLocaleString('es-CL')}
+                        </p>
+                        <small style={{ display: 'block', color: 'var(--primary-color)', fontWeight: '500' }}>
+                            {motivationalMessage}
+                        </small>
                     </div>
                 </header>
 
@@ -335,8 +394,40 @@ const Goals = () => {
                     {goals.map(g => {
                         const progress = Math.min((g.current / g.target) * 100, 100);
 
+                        const isCompleted = progress >= 100;
+
                         return (
-                            <div key={g.id} className="goal-card">
+                            <div key={g.id} className="goal-card" style={{
+                                border: isCompleted ? '2px solid #fbbf24' : '1px solid var(--glass-border)',
+                                boxShadow: isCompleted ? '0 0 20px rgba(251, 191, 36, 0.2)' : 'none',
+                                background: isCompleted ? 'linear-gradient(to bottom right, rgba(251, 191, 36, 0.05), rgba(var(--bg-card-rgb), 0.8))' : 'var(--bg-card)',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}>
+                                {isCompleted && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '10px',
+                                        right: '40px', // Left of delete button
+                                        background: '#fbbf24',
+                                        color: '#000',
+                                        padding: '4px 12px',
+                                        borderRadius: '20px',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 'bold',
+                                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                                        animation: 'pulse 2s infinite',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px'
+                                    }}
+                                        onClick={triggerCelebration}
+                                        title="¡Celebrar de nuevo!"
+                                    >
+                                        🏆 ¡CUMPLIDA! <i className="fas fa-party-horn" style={{ fontSize: '0.9rem' }}></i>
+                                    </div>
+                                )}
                                 <div className="goal-header">
                                     <div>
                                         <h4>{g.name}</h4>
@@ -358,11 +449,28 @@ const Goals = () => {
                                 </div>
 
                                 <div className="goal-progress-container">
-                                    <div className="goal-progress-bar" style={{ width: `${progress}%` }}></div>
+                                    <div className="goal-progress-bar" style={{
+                                        width: `${progress}%`,
+                                        background: isCompleted ? 'linear-gradient(90deg, #fbbf24, #f59e0b)' : 'var(--primary-color)'
+                                    }}></div>
                                 </div>
 
                                 <div className="goal-footer">
-                                    {g.goalType === 'target-date' ? (
+                                    {isCompleted ? (
+                                        <>
+                                            <div className="goal-detail-icon">
+                                                <i className="fas fa-calendar-check" style={{ color: 'var(--text-main)' }}></i>
+                                            </div>
+                                            <div className="goal-detail-text">
+                                                <span className="goal-detail-label" style={{ color: 'var(--text-main)', fontWeight: 'bold' }}>
+                                                    Inicio: {g.createdAt ? new Date(g.createdAt).toLocaleDateString() : 'Fecha no registrada'}
+                                                </span>
+                                                <span className="goal-detail-value" style={{ color: 'var(--text-muted)' }}>
+                                                    {g.deadline ? `Fecha Meta: ${new Date(g.deadline).toLocaleDateString()}` : '¡Meta Completada!'}
+                                                </span>
+                                            </div>
+                                        </>
+                                    ) : g.goalType === 'target-date' ? (
                                         <>
                                             <div className="goal-detail-icon">
                                                 <i className="fas fa-bullseye"></i>

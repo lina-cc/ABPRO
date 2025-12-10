@@ -408,6 +408,12 @@ body {
     margin-bottom: 3rem;
 }
 
+@media (min-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
 .stat-card {
     position: relative;
     overflow: hidden;

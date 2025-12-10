@@ -11,9 +11,12 @@ import Goals from './pages/Goals';
 import Education from './pages/Education';
 import History from './pages/History';
 
+import ScrollToTop from './components/ScrollToTop';
+
 function App() {
   return (
     <Layout>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/about" element={<AboutUs />} />

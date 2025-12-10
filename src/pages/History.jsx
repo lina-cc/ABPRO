@@ -53,11 +53,13 @@ const History = () => {
             currentData: {
                 income: calculateTotalByType(currentTrans, 'income'),
                 expense: calculateTotalByType(currentTrans, 'expense'),
-                balance: calculateTotalByType(currentTrans, 'income') - calculateTotalByType(currentTrans, 'expense')
+                savings: calculateTotalByType(currentTrans, 'saving'),
+                balance: calculateTotalByType(currentTrans, 'income') - calculateTotalByType(currentTrans, 'expense') - calculateTotalByType(currentTrans, 'saving')
             },
             previousData: {
                 income: calculateTotalByType(prevTrans, 'income'),
-                expense: calculateTotalByType(prevTrans, 'expense')
+                expense: calculateTotalByType(prevTrans, 'expense'),
+                savings: calculateTotalByType(prevTrans, 'saving')
             },
             filteredTransactions: currentTrans.sort((a, b) => new Date(b.date) - new Date(a.date)) // Newest first
         };
@@ -66,6 +68,7 @@ const History = () => {
     // Variations
     const incomeVariation = calculateMonthlyVariation(currentData.income, previousData.income);
     const expenseVariation = calculateMonthlyVariation(currentData.expense, previousData.expense);
+    const savingsVariation = calculateMonthlyVariation(currentData.savings, previousData.savings);
 
     // Chart Data
     const expenseCategories = {};
@@ -85,10 +88,10 @@ const History = () => {
     };
 
     const balanceChartData = {
-        labels: ['Ingresos', 'Gastos'],
+        labels: ['Ingresos', 'Gastos', 'Ahorros'],
         datasets: [{
-            data: [currentData.income, currentData.expense],
-            backgroundColor: ['#10b981', '#ef4444'],
+            data: [currentData.income, currentData.expense, currentData.savings],
+            backgroundColor: ['#10b981', '#ef4444', '#3b82f6'],
             borderWidth: 1,
         }],
     };
@@ -181,6 +184,11 @@ const History = () => {
                         <p className="amount" style={{ color: 'var(--danger)' }}>${currentData.expense}</p>
                         {renderVariation(expenseVariation)}
                     </div>
+                    <div className="stat-card glass-panel" style={{ borderLeft: '4px solid #3b82f6' }}>
+                        <h3>Ahorros</h3>
+                        <p className="amount" style={{ color: '#3b82f6' }}>${currentData.savings}</p>
+                        {renderVariation(savingsVariation)}
+                    </div>
                 </div>
 
                 {/* Charts */}
@@ -196,7 +204,7 @@ const History = () => {
                         )}
                     </div>
                     <div className="chart-container glass-panel">
-                        <h3>Flujo de Caja</h3>
+                        <h3>Distribución de Ingresos</h3>
                         {currentData.income > 0 || currentData.expense > 0 ? (
                             <div style={{ height: '300px', display: 'flex', justifyContent: 'center' }}>
                                 <Doughnut data={balanceChartData} options={{ maintainAspectRatio: false }} />
@@ -234,7 +242,7 @@ const History = () => {
                                             </div>
                                         </td>
                                         <td style={{ padding: '1rem' }}>{t.desc || '-'}</td>
-                                        <td style={{ padding: '1rem', color: t.type === 'income' ? 'var(--success)' : 'var(--danger)', fontWeight: 'bold' }}>
+                                        <td style={{ padding: '1rem', color: t.type === 'income' ? 'var(--success)' : t.type === 'saving' ? '#3b82f6' : 'var(--danger)', fontWeight: 'bold' }}>
                                             {t.type === 'income' ? '+' : '-'}${t.amount}
                                         </td>
                                     </tr>

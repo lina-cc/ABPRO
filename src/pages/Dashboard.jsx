@@ -12,17 +12,48 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Dashboard = () => {
     const { user } = useAuth();
-    const { calculateBalance, calculateIncome, calculateExpense, transactions, goals } = useData();
+    const { calculateBalance, calculateIncome, calculateExpense, calculateSavings, transactions, goals } = useData();
 
     const balance = calculateBalance();
     const income = calculateIncome();
     const expense = calculateExpense();
+    const totalSavings = calculateSavings();
 
     // Math Calculations
     const { current, previous } = getCurrentAndPreviousMonthData(transactions);
     const incomeVariation = calculateMonthlyVariation(current.income, previous.income);
     const expenseVariation = calculateMonthlyVariation(current.expense, previous.expense);
-    const averageSavings = calculateAverageMonthlySavings(transactions);
+    const balanceVariation = calculateMonthlyVariation(
+        current.income - current.expense,
+        previous.income - previous.expense
+    );
+    const averageSavings = calculateAverageMonthlySavings(transactions); // This util might need check if it assumes saving is expense?
+    // Actually, calculateAverageMonthlySavings in mathUtils uses (income - expense).
+    // If I changed calculateExpense in DataContext but NOT in mathUtils, we have a discrepancy.
+    // In mathUtils I did: expense = calculateTotalByType(..., 'expense') + calculateTotalByType(..., 'saving');
+    // So mathUtils treats 'saving' as 'expense' (outflow).
+    // Income - Outflow = Net Result (Surplus). This is "Savings" in the sense of "Money left over".
+    // But "Ahorro" transaction is explicit saving.
+    // Let's rely on the explicit values for the dashboard display.
+
+    // For Dashboard Card "Ahorros (Mes)":
+    const monthlySavings = current.income - current.expense; // This is 'surplus'.
+    // User wants 'Ahorros' (the transaction type).
+    const currentMonthSavings = transactions
+        .filter(t => t.type === 'saving' && t.date.startsWith(new Date().toISOString().slice(0, 7))) // Approximate YYYY-MM
+        .reduce((acc, t) => acc + Number(t.amount), 0);
+
+    // Let's use the explicit 'saving' type for the card.
+
+    // Update mathUtils helper for charts or do it here?
+    // Let's do it here for clarity.
+    // Use consistent date string format for matching
+    const today = new Date();
+    const currentMonthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+
+    const currentMonthSavingTrans = transactions.filter(t =>
+        t.type === 'saving' && t.date.startsWith(currentMonthKey)
+    ).reduce((acc, t) => acc + Number(t.amount), 0);
 
     // Get current date for display
     const currentDate = new Date().toLocaleDateString('es-ES', {
@@ -31,10 +62,10 @@ const Dashboard = () => {
     });
     const capitalizedDate = currentDate.charAt(0).toUpperCase() + currentDate.slice(1);
 
-    // Prepare data for Expense Chart
+    // Prepare data for Expense Chart (This Month Only)
     const expenseCategories = {};
     transactions
-        .filter(t => t.type === 'expense')
+        .filter(t => t.type === 'expense' && t.date.startsWith(currentMonthKey))
         .forEach(t => {
             expenseCategories[t.category] = (expenseCategories[t.category] || 0) + Number(t.amount);
         });
@@ -51,15 +82,20 @@ const Dashboard = () => {
     };
 
     const balanceData = {
-        labels: ['Ingresos', 'Gastos'],
+        labels: ['Ingresos', 'Gastos', 'Ahorros'],
         datasets: [
             {
-                data: [income, expense],
-                backgroundColor: ['#10b981', '#ef4444'],
+                // Use current month data instead of all-time data
+                data: [current.income, current.expense - currentMonthSavingTrans, currentMonthSavingTrans],
+                backgroundColor: ['#10b981', '#ef4444', '#3b82f6'],
                 borderWidth: 1,
             },
         ],
     };
+
+    // Calculate variations properly using the separate values
+    // ...
+
 
     const renderVariation = (variation) => {
         if (variation === null) return <small className="variation-neutral">vs mes anterior</small>;
@@ -91,8 +127,11 @@ const Dashboard = () => {
 
                 <div className="stats-grid animate-slide-up" style={{ animationDelay: '0.2s' }}>
                     <div className="stat-card glass-panel">
-                        <h3>Balance Total</h3>
-                        <p className="amount" id="total-balance">${balance}</p>
+                        <h3>Balance Mensual</h3>
+                        <p className="amount" id="monthly-balance" style={{ color: (current.income - current.expense) >= 0 ? 'var(--text-main)' : 'var(--danger)' }}>
+                            ${current.income - current.expense}
+                        </p>
+                        {renderVariation(balanceVariation)}
                     </div>
                     <div className="stat-card glass-panel income">
                         <h3>Ingresos (Mes)</h3>
@@ -101,15 +140,21 @@ const Dashboard = () => {
                     </div>
                     <div className="stat-card glass-panel expense">
                         <h3>Gastos (Mes)</h3>
-                        <p className="amount" id="total-expense">${current.expense}</p>
-                        {/* Invertir lógica de color para gastos: subir es malo (rojo), bajar es bueno (verde) - Opcional, por ahora mantenemos consistencia matemática */}
+                        <p className="amount" id="total-expense">${current.expense - currentMonthSavingTrans}</p> {/* Fix: remove savings from expense display if grouped in logic */}
+                        {/* Actually getCurrentAndPreviousMonthData in mathUtils sums expense + saving. 
+                            To display PURE expense, we subtract saving. */}
                         {renderVariation(expenseVariation)}
+                    </div>
+                    <div className="stat-card glass-panel" style={{ borderLeft: '4px solid #3b82f6' }}>
+                        <h3>Ahorros (Mes)</h3>
+                        <p className="amount" style={{ color: '#3b82f6' }}>${currentMonthSavingTrans}</p>
+                        <small style={{ color: 'var(--text-muted)' }}>Reservado este mes</small>
                     </div>
                 </div>
 
                 <div className="charts-grid animate-slide-up" style={{ animationDelay: '0.4s' }}>
                     <div className="chart-container glass-panel">
-                        <h3>Gastos por Categoría</h3>
+                        <h3>Gastos por Categoría (Mes)</h3>
                         {Object.keys(expenseCategories).length > 0 ? (
                             <div style={{ height: '300px', display: 'flex', justifyContent: 'center' }}>
                                 <Doughnut data={expenseData} options={{ maintainAspectRatio: false }} />
@@ -119,7 +164,7 @@ const Dashboard = () => {
                         )}
                     </div>
                     <div className="chart-container glass-panel">
-                        <h3>Ingresos vs Gastos</h3>
+                        <h3>Distribución de Ingresos</h3>
                         <div style={{ height: '300px', display: 'flex', justifyContent: 'center' }}>
                             <Doughnut data={balanceData} options={{ maintainAspectRatio: false }} />
                         </div>

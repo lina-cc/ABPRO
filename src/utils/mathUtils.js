@@ -4,10 +4,11 @@
  */
 export const groupTransactionsByMonth = (transactions) => {
     return transactions.reduce((acc, transaction) => {
-        const date = new Date(transaction.date);
-        // Ajustar zona horaria si es necesario, pero por simplicidad usaremos UTC o local consistente
-        // Formato YYYY-MM
-        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        // Use string slicing YYYY-MM to avoid timezone issues with new Date()
+        // transaction.date is expected to be "YYYY-MM-DD"
+        if (!transaction.date) return acc;
+
+        const key = transaction.date.substring(0, 7); // "2025-12"
 
         if (!acc[key]) {
             acc[key] = [];
@@ -55,11 +56,11 @@ export const getCurrentAndPreviousMonthData = (transactions) => {
     return {
         current: {
             income: calculateTotalByType(currentTrans, 'income'),
-            expense: calculateTotalByType(currentTrans, 'expense')
+            expense: calculateTotalByType(currentTrans, 'expense') + calculateTotalByType(currentTrans, 'saving')
         },
         previous: {
             income: calculateTotalByType(prevTrans, 'income'),
-            expense: calculateTotalByType(prevTrans, 'expense')
+            expense: calculateTotalByType(prevTrans, 'expense') + calculateTotalByType(prevTrans, 'saving')
         }
     };
 };
@@ -77,7 +78,7 @@ export const calculateAverageMonthlySavings = (transactions) => {
     const totalSavings = months.reduce((acc, monthKey) => {
         const monthTrans = grouped[monthKey];
         const income = calculateTotalByType(monthTrans, 'income');
-        const expense = calculateTotalByType(monthTrans, 'expense');
+        const expense = calculateTotalByType(monthTrans, 'expense') + calculateTotalByType(monthTrans, 'saving');
         return acc + (income - expense);
     }, 0);
 

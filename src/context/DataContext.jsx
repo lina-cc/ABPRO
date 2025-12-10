@@ -8,7 +8,9 @@ import {
     setDoc,
     onSnapshot,
     query,
-    orderBy
+    orderBy,
+    updateDoc,
+    increment
 } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 
@@ -141,6 +143,18 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    const updateGoalProgress = async (id, amountToAdd) => {
+        if (!user) return;
+        try {
+            const goalRef = doc(db, `users/${user.uid}/goals`, id);
+            await updateDoc(goalRef, {
+                current: increment(Number(amountToAdd))
+            });
+        } catch (error) {
+            console.error("Error updating goal: ", error);
+        }
+    };
+
     const addCategoryMetadata = async (name, icon, color) => {
         if (!user) return;
         try {
@@ -172,6 +186,12 @@ export const DataProvider = ({ children }) => {
             .reduce((acc, curr) => acc + Number(curr.amount), 0);
     };
 
+    const calculateSavings = () => {
+        return transactions
+            .filter(t => t.type === 'saving')
+            .reduce((acc, curr) => acc + Number(curr.amount), 0);
+    };
+
     return (
         <DataContext.Provider value={{
             transactions,
@@ -181,10 +201,12 @@ export const DataProvider = ({ children }) => {
             deleteTransaction,
             addGoal,
             deleteGoal,
+            updateGoalProgress,
             addCategoryMetadata,
             calculateBalance,
             calculateIncome,
-            calculateExpense
+            calculateExpense,
+            calculateSavings
         }}>
             {children}
         </DataContext.Provider>
